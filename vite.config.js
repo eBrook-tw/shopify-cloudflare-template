@@ -1,6 +1,15 @@
 import { reactRouter } from "@react-router/dev/vite";
+import { cloudflare } from "@cloudflare/vite-plugin";
 import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const prismaClientDir = path.resolve(
+  __dirname,
+  "node_modules/.prisma/client",
+);
 
 // Related: https://github.com/remix-run/remix/issues/2835#issuecomment-1144102176
 // Replace the HOST env var with SHOPIFY_APP_URL so that it doesn't break the Vite server.
@@ -19,23 +28,35 @@ const host = new URL(process.env.SHOPIFY_APP_URL || "http://localhost")
   .hostname;
 let hmrConfig;
 
-if (host === "localhost") {
-  hmrConfig = {
-    protocol: "ws",
-    host: "localhost",
-    port: 64999,
-    clientPort: 64999,
-  };
-} else {
-  hmrConfig = {
-    protocol: "wss",
-    host: host,
-    port: parseInt(process.env.FRONTEND_PORT) || 8002,
-    clientPort: 443,
-  };
-}
+// HMR always binds to localhost — tunnel termination is local,
+// so the browser (on the same machine) can reach it directly.
+hmrConfig = {
+  protocol: "ws",
+  host: "localhost",
+  port: 64999,
+  clientPort: 64999,
+};
 
 export default defineConfig({
+  resolve: {
+    dedupe: ["react", "react-dom", "react-router"],
+    alias: [
+      {
+        find: /^\.prisma\/client\/default$/,
+        replacement: path.join(prismaClientDir, "wasm.js"),
+      },
+      {
+        find: /^#main-entry-point$/,
+        replacement: path.join(prismaClientDir, "wasm.js"),
+      },
+    ],
+  },
+  ssr: {
+    resolve: {
+      conditions: ["workerd", "worker", "browser", "module", "default"],
+      externalConditions: ["workerd", "worker", "browser", "module", "default"],
+    },
+  },
   server: {
     allowedHosts: [host],
     cors: {
@@ -44,15 +65,12 @@ export default defineConfig({
     port: Number(process.env.PORT || 3000),
     hmr: hmrConfig,
     fs: {
-      // See https://vitejs.dev/config/server-options.html#server-fs-allow for more information
-      allow: ["app", "node_modules"],
+      allow: ["app", "workers", "node_modules"],
     },
   },
-  plugins: [reactRouter(), tsconfigPaths()],
-  build: {
-    assetsInlineLimit: 0,
-  },
-  optimizeDeps: {
-    include: ["@shopify/app-bridge-react"],
-  },
+  plugins: [
+    cloudflare({ viteEnvironment: { name: "ssr" } }),
+    reactRouter(),
+    tsconfigPaths(),
+  ],
 });

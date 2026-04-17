@@ -1,0 +1,38 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "cloudflare-1",
+	"compatibility_date": "2026-04-16",
+	"main": "./workers/app.ts",
+	"assets": {
+		"directory": "./build/client"
+	},
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "cloudflare-shopify-1",
+			"database_id": "68b92368-7be2-4ff7-a5ea-c3c98bebbb92"
+		}
+	],
+	"vars": {
+		"SHOPIFY_APP_URL": "https://shopify-dev-1.antonydu.store",
+		"SCOPES": "write_products,write_metaobjects,write_metaobject_definitions"
+	},
+	"observability": {
+		"logs": {
+			"enabled": true,
+			"invocation_logs": true
+		},
+		"traces": {
+			"enabled": true
+		}
+	},
+	"routes": [
+		{
+			"pattern": "shopify-dev-1.antonydu.store",
+			"custom_domain": true
+		}
+	]
+}

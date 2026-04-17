@@ -1,0 +1,7 @@
+# Local development variables for Cloudflare Workers
+# These mirror the secrets set via `wrangler secret put` in production
+
+CLOUDFLARE_TUNNEL_TOKEN=
+SHOPIFY_API_KEY=
+SHOPIFY_API_SECRET=
+SHOPIFY_APP_URL=

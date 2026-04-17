@@ -1,14 +1,15 @@
-import { authenticate } from "../shopify.server";
-import db from "../db.server";
+import { shopify } from "../shopify.server";
+import { getPrismaClient } from "../db.server";
 
-export const action = async ({ request }) => {
-  const { shop, session, topic } = await authenticate.webhook(request);
+export const action = async ({ request, context }) => {
+  const { shop, session, topic } = await shopify(context).authenticate.webhook(request);
 
   console.log(`Received ${topic} webhook for ${shop}`);
 
   // Webhook requests can trigger multiple times and after an app has already been uninstalled.
   // If this webhook already ran, the session may have been deleted previously.
   if (session) {
+    const db = getPrismaClient(context.cloudflare.env.DB);
     await db.session.deleteMany({ where: { shop } });
   }
 

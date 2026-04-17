@@ -2,16 +2,16 @@ import { useEffect } from "react";
 import { useFetcher } from "react-router";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { authenticate } from "../shopify.server";
+import { shopify } from "../shopify.server";
 
-export const loader = async ({ request }) => {
-  await authenticate.admin(request);
+export const loader = async ({ request, context }) => {
+  await shopify(context).authenticate.admin(request);
 
   return null;
 };
 
-export const action = async ({ request }) => {
-  const { admin } = await authenticate.admin(request);
+export const action = async ({ request, context }) => {
+  const { admin } = await shopify(context).authenticate.admin(request);
   const color = ["Red", "Orange", "Yellow", "Green"][
     Math.floor(Math.random() * 4)
   ];
@@ -142,7 +142,7 @@ export default function Index() {
 
   return (
     <s-page heading="Shopify app template">
-      <s-button slot="primary-action" onClick={generateProduct}>
+      <s-button slot="primary-action" variant="primary" onClick={generateProduct} suppressHydrationWarning>
         Generate a product
       </s-button>
 

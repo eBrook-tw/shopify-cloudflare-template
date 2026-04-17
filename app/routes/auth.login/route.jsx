@@ -1,17 +1,17 @@
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { useState } from "react";
 import { Form, useActionData, useLoaderData } from "react-router";
-import { login } from "../../shopify.server";
+import { shopify } from "../../shopify.server";
 import { loginErrorMessage } from "./error.server";
 
-export const loader = async ({ request }) => {
-  const errors = loginErrorMessage(await login(request));
+export const loader = async ({ request, context }) => {
+  const errors = loginErrorMessage(await shopify(context).login(request));
 
   return { errors };
 };
 
-export const action = async ({ request }) => {
-  const errors = loginErrorMessage(await login(request));
+export const action = async ({ request, context }) => {
+  const errors = loginErrorMessage(await shopify(context).login(request));
 
   return {
     errors,

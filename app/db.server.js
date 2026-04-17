@@ -1,11 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaD1 } from "@prisma/adapter-d1";
 
-if (process.env.NODE_ENV !== "production") {
-  if (!global.prismaGlobal) {
-    global.prismaGlobal = new PrismaClient();
-  }
+export function getPrismaClient(db) {
+  return new PrismaClient({ adapter: new PrismaD1(db) });
 }
-
-const prisma = global.prismaGlobal ?? new PrismaClient();
-
-export default prisma;
